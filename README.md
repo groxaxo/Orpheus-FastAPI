@@ -1,8 +1,8 @@
-![Orpheus-FASTAPI Banner](https://lex-au.github.io/Orpheus-FastAPI/Banner.png)
+![Orpheus-FASTAPI Banner](docs/Banner.png)
 
 # Orpheus-FASTAPI
 
-[![GitHub](https://img.shields.io/github/license/Lex-au/Orpheus-FastAPI)](https://github.com/Lex-au/Orpheus-FastAPI/blob/main/LICENSE.txt)
+[![GitHub](https://img.shields.io/github/license/groxaxo/Orpheus-FastAPI)](https://github.com/groxaxo/Orpheus-FastAPI/blob/main/LICENSE)
 
 High-performance Text-to-Speech server with OpenAI-compatible API, multilingual support with 24 voices, emotion tags, and modern web UI. Optimized for RTX GPUs.
 
@@ -45,7 +45,7 @@ High-performance Text-to-Speech server with OpenAI-compatible API, multilingual 
 - 📊 Implemented detailed performance reporting for audio generation
 - ⚠️ Note: Python 3.12 is not supported due to removal of pkgutil.ImpImporter
 
-[GitHub Repository](https://github.com/Lex-au/Orpheus-FastAPI)
+[GitHub Repository](https://github.com/groxaxo/Orpheus-FastAPI)
 
 ## Model Collection
 
@@ -59,14 +59,14 @@ High-performance Text-to-Speech server with OpenAI-compatible API, multilingual 
 ## Voice Demos
 
 Listen to sample outputs with different voices and emotions:
-- [Default Test Sample](https://lex-au.github.io/Orpheus-FastAPI/DefaultTest.mp3) - Standard neutral tone
-- [Leah Happy Sample](https://lex-au.github.io/Orpheus-FastAPI/LeahHappy.mp3) - Cheerful, upbeat demo
-- [Tara Sad Sample](https://lex-au.github.io/Orpheus-FastAPI/TaraSad.mp3) - Emotional, melancholic demo
-- [Zac Contemplative Sample](https://lex-au.github.io/Orpheus-FastAPI/ZacContemplative.mp3) - Thoughtful, measured tone
+- [Default Test Sample](docs/DefaultTest.mp3) - Standard neutral tone
+- [Leah Happy Sample](docs/LeahHappy.mp3) - Cheerful, upbeat demo
+- [Tara Sad Sample](docs/TaraSad.mp3) - Emotional, melancholic demo
+- [Zac Contemplative Sample](docs/ZacContemplative.mp3) - Thoughtful, measured tone
 
 ## User Interface
 
-![Web User Interface](https://lex-au.github.io/Orpheus-FastAPI/WebUI.png)
+![Web User Interface](docs/WebUI.png)
 
 ## Features
 
@@ -147,7 +147,7 @@ The system will automatically download the specified model from Hugging Face bef
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Lex-au/Orpheus-FastAPI.git
+git clone https://github.com/groxaxo/Orpheus-FastAPI.git
 cd Orpheus-FastAPI
 ```
 
@@ -195,13 +195,13 @@ Or with specific host/port:
 uvicorn app:app --host 0.0.0.0 --port 5005 --reload
 ```
 
-![Terminal Output](https://lex-au.github.io/Orpheus-FastAPI/terminal.png)
+![Terminal Output](docs/terminal.png)
 
 Access:
 - Web interface: http://localhost:5005/ (or http://127.0.0.1:5005/)
 - API documentation: http://localhost:5005/docs (or http://127.0.0.1:5005/docs)
 
-![API Documentation](https://lex-au.github.io/Orpheus-FastAPI/docs.png)
+![API Documentation](docs/docs.png)
 
 ## API Usage
 
@@ -409,7 +409,7 @@ Configure in docker compose, if using docker. Not using docker; create a `.env` 
 
 The system now supports loading environment variables from a `.env` file in the project root, making it easier to configure without modifying system-wide environment settings. See `.env.example` for a template.
 
-![Server Configuration UI](https://lex-au.github.io/Orpheus-FastAPI/ServerConfig.png)
+![Server Configuration UI](docs/ServerConfig.png)
 
 Note: Repetition penalty is hardcoded to 1.1 and cannot be changed through environment variables as this is the only value that produces stable, high-quality output.
 
@@ -450,4 +450,4 @@ For extended audio generation (books, long narrations), you may want to increase
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the LICENSE.txt file for details.
+This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
