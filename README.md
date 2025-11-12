@@ -512,6 +512,75 @@ For extended audio generation (books, long narrations), you may want to increase
 2. Increase ORPHEUS_API_TIMEOUT to 1800 for longer processing times
 3. Use the same values in your llama.cpp parameters (if you're using llama.cpp)
 
+## Troubleshooting
+
+### GPU Issues
+
+**RTX 3090 / Ampere GPU Not Detected:**
+1. Verify CUDA installation: `nvidia-smi` should show your GPU
+2. Check PyTorch CUDA support: `python -c "import torch; print(torch.cuda.is_available())"`
+3. For Docker: Ensure NVIDIA Container Toolkit is installed
+4. The system automatically detects Ampere GPUs (compute capability 8.0+) - check startup logs
+
+**Out of Memory Errors:**
+1. Reduce `ORPHEUS_MAX_TOKENS` in your .env file (try 4096 or 2048)
+2. Use a smaller quantized model (Q2_K instead of Q8_0)
+3. Close other GPU-intensive applications
+4. For RTX 3090 with 24GB VRAM: Should easily handle Q8_0 models
+
+**Slow Performance:**
+1. Verify GPU is being used: Check startup logs for "High-end CUDA GPU detected"
+2. Try a smaller quantized model (Q2_K or Q4_K_M) for faster inference
+3. Increase `ORPHEUS_API_TIMEOUT` if requests are timing out
+4. Check that llama.cpp server is using `--n-gpu-layers` (Docker does this automatically)
+
+### Model Download Issues
+
+**Model Download Fails:**
+1. Check internet connectivity
+2. Verify the model URL is accessible in a web browser
+3. For HuggingFace models: Ensure the repository and file exist
+4. For custom URLs: Verify the URL is publicly accessible or use authentication if needed
+5. Check disk space in the `./models` directory
+
+**Using a Custom GGUF Model:**
+```bash
+# In your .env file:
+ORPHEUS_MODEL_NAME=my-custom-model.gguf
+ORPHEUS_MODEL_URL=https://example.com/path/to/model.gguf
+```
+
+**Model Not Compatible:**
+- Ensure you're using an Orpheus-compatible GGUF model
+- The model should be based on the Orpheus architecture
+- Check model file integrity (file size should match expectations)
+
+### API Connection Issues
+
+**Connection Refused / Timeout:**
+1. Verify the inference server is running: `curl http://localhost:5006/health` (or your API URL)
+2. Check `ORPHEUS_API_URL` is set correctly in .env
+3. For Docker: Use `http://llama-cpp-server:5006/v1/completions` (container name)
+4. For native: Use `http://127.0.0.1:1234/v1/completions` (or your server's port)
+
+**No Audio Generated:**
+1. Check inference server logs for errors
+2. Verify the model is loaded correctly in the inference server
+3. Test with a simple prompt first
+4. Check that `ORPHEUS_API_URL` points to the `/v1/completions` endpoint
+
+### Docker Issues
+
+**Container Won't Start:**
+1. Check Docker logs: `docker logs orpheus-fastapi` or `docker logs llama-cpp-server`
+2. Verify .env file exists and is properly formatted
+3. Ensure models directory exists: `mkdir -p models`
+4. Check NVIDIA Container Toolkit: `docker run --rm --gpus all nvidia/cuda:12.4.0-base-ubuntu22.04 nvidia-smi`
+
+**Permission Errors:**
+1. Set UID and GID in .env: `UID=1000` and `GID=1000` (use your user IDs)
+2. Fix ownership: `sudo chown -R $USER:$USER models outputs`
+
 ## License
 
 This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
