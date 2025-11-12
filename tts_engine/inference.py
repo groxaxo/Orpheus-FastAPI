@@ -72,7 +72,8 @@ if torch.cuda.is_available():
             print(f"📊 VRAM: {gpu_mem_gb:.2f} GB")
             print(f"📊 Compute Capability: {compute_capability}")
             print("🚀 Using high-performance optimizations")
-            if "3090" in gpu_name or "3080" in gpu_name:
+            # Use compute capability for reliable Ampere detection (CC 8.6 = RTX 30 series)
+            if props.major == 8 and props.minor == 6:
                 print("✓ Ampere GPU optimization enabled (RTX 30 series)")
     else:
         if not IS_RELOADER:
