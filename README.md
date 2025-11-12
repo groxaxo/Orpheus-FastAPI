@@ -118,30 +118,63 @@ cp .env.example .env # Create your .env file from the example
 copy .env.example .env # For Windows CMD
 ```
 
-For multilingual models, edit the `.env` file and change the model name:
-```
+#### Using Models from the Official Collection
+
+For multilingual models from the [lex-au collection](https://huggingface.co/collections/lex-au/orpheus-fastapi-67e125ae03fc96dae0517707), edit the `.env` file and change the model name:
+```bash
 # Change this line in .env to use a language-specific model
 ORPHEUS_MODEL_NAME=Orpheus-3b-French-FT-Q8_0.gguf  # Example for French
+ORPHEUS_MODEL_REPO=lex-au  # Default repository (can be omitted)
 ```
 
-Then start the services:
+#### Using Custom GGUF Models from Any Source
 
-For CUDA GPU support run
+You can use **any Orpheus-compatible GGUF model** from anywhere on the internet:
+
+**Option 1: From a different HuggingFace repository**
+```bash
+ORPHEUS_MODEL_NAME=your-model-name.gguf
+ORPHEUS_MODEL_REPO=username  # HuggingFace username or org
+```
+
+**Option 2: From a direct URL (any web server)**
+```bash
+ORPHEUS_MODEL_NAME=orpheus-custom.gguf  # Local filename to save as
+ORPHEUS_MODEL_URL=https://example.com/path/to/your/model.gguf
+```
+
+**Examples of custom URLs:**
+```bash
+# From another HuggingFace user
+ORPHEUS_MODEL_URL=https://huggingface.co/username/repo-name/resolve/main/model.gguf
+
+# From your own web server
+ORPHEUS_MODEL_URL=https://your-server.com/models/orpheus-custom.gguf
+
+# From a cloud storage service
+ORPHEUS_MODEL_URL=https://storage.example.com/models/orpheus.gguf
+```
+
+**Note:** When using `ORPHEUS_MODEL_URL`, the `ORPHEUS_MODEL_REPO` setting is ignored, giving you complete flexibility to source models from anywhere.
+
+#### Starting the Services
+
+For CUDA GPU support (including RTX 3090 and all Ampere GPUs):
 ```bash
 docker compose -f docker-compose-gpu.yml up
 ```
 
-For ROCm GPU support run
+For ROCm GPU support:
 ```bash
 docker compose -f docker-compose-gpu-rocm.yml up
 ```
 
-For CPU support run:
+For CPU support:
 ```bash
 docker compose -f docker-compose-cpu.yml up
 ```
 
-The system will automatically download the specified model from Hugging Face before starting the service.
+The system will automatically download the specified model before starting the service.
 
 ### FastAPI Service Native Installation
 
@@ -304,7 +337,7 @@ Example: `"Well, that's interesting <laugh> I hadn't thought of that before."`
 
 ## Technical Details
 
-This server works as a frontend that connects to an external LLM inference server. It sends text prompts to the inference server, which generates tokens that are then converted to audio using the SNAC model. The system has been optimised for RTX 4090 GPUs with:
+This server works as a frontend that connects to an external LLM inference server. It sends text prompts to the inference server, which generates tokens that are then converted to audio using the SNAC model. The system has been optimized for modern NVIDIA GPUs including RTX 30/40 series with:
 
 - Vectorised tensor operations
 - Parallel processing with CUDA streams
@@ -317,12 +350,14 @@ This server works as a frontend that connects to an external LLM inference serve
 The system features intelligent hardware detection that automatically optimizes performance based on your hardware capabilities:
 
 - **High-End GPU Mode** (dynamically detected based on capabilities):
+  - **Fully compatible with Ampere GPUs** (RTX 3090, 3080 Ti, 3080, A100, etc.)
   - Triggered by either: 16GB+ VRAM, compute capability 8.0+, or 12GB+ VRAM with 7.0+ compute capability
   - Advanced parallel processing with 4 workers
   - Optimized batch sizes (32 tokens)
   - High-throughput parallel file I/O
-  - Full hardware details displayed (name, VRAM, compute capability)
+  - Full hardware details displayed (name, architecture, VRAM, compute capability)
   - GPU-specific optimizations automatically applied
+  - **RTX 3090 users:** Automatic detection and optimization enabled
 
 - **Standard GPU Mode** (other CUDA-capable GPUs):
   - Efficient parallel processing
@@ -336,6 +371,13 @@ The system features intelligent hardware detection that automatically optimizes 
   - Smaller batch sizes (16 tokens)
   - Sequential file I/O
   - Detailed CPU cores, threads, and RAM information
+
+**Supported GPU Architectures:**
+- Ada Lovelace (RTX 4090, 4080, etc.) - Compute 8.9
+- **Ampere (RTX 3090, 3080 Ti, 3080, A100, etc.) - Compute 8.6/8.0** ✓
+- Turing (RTX 2080 Ti, 2080, etc.) - Compute 7.5
+- Volta (V100, Titan V) - Compute 7.0
+- Pascal (GTX 1080 Ti, etc.) - Compute 6.x
 
 No manual configuration is needed - the system automatically detects hardware capabilities and adapts for optimal performance across different generations of GPUs and CPUs.
 
@@ -382,14 +424,29 @@ This application requires a separate LLM inference server running the Orpheus mo
 - [llama.cpp server](https://github.com/ggerganov/llama.cpp) - Run with the appropriate model parameters
 - Any compatible OpenAI API-compatible server
 
-**Quantized Model Options:**
+### Using GGUF Models
+
+**You can use ANY Orpheus-compatible GGUF model from anywhere on the internet!** The system is not limited to specific repositories.
+
+**Official Model Collection (lex-au):**
 - **lex-au/Orpheus-3b-FT-Q2_K.gguf**: Fastest inference (~50% faster tokens/sec than Q8_0)
 - **lex-au/Orpheus-3b-FT-Q4_K_M.gguf**: Balanced quality/speed 
 - **lex-au/Orpheus-3b-FT-Q8_0.gguf**: Original high-quality model
 
-Choose based on your hardware and needs. Lower bit models (Q2_K, Q4_K_M) provide ~2x realtime performance on high-end GPUs.
+[Browse the official model collection](https://huggingface.co/collections/lex-au/orpheus-fastapi-67e125ae03fc96dae0517707)
 
-[Browse all models in the collection](https://huggingface.co/collections/lex-au/orpheus-fastapi-67e125ae03fc96dae0517707)
+**Using Custom Models:**
+
+You have complete flexibility to use Orpheus GGUF models from any source:
+
+1. **From any HuggingFace repository** - Set `ORPHEUS_MODEL_REPO` to the username/org
+2. **From direct URLs** - Set `ORPHEUS_MODEL_URL` to any HTTP/HTTPS URL
+3. **From your own server** - Host models on your infrastructure
+4. **From cloud storage** - Use signed URLs from S3, Azure, GCS, etc.
+
+See the Docker Compose section above for configuration examples.
+
+Choose based on your hardware and needs. Lower bit models (Q2_K, Q4_K_M) provide ~2x realtime performance on high-end GPUs.
 
 The inference server should be configured to expose an API endpoint that this FastAPI application will connect to.
 
@@ -397,15 +454,22 @@ The inference server should be configured to expose an API endpoint that this Fa
 
 Configure in docker compose, if using docker. Not using docker; create a `.env` file:
 
+**Server Configuration:**
 - `ORPHEUS_API_URL`: URL of the LLM inference API (default in Docker: http://llama-cpp-server:5006/v1/completions)
 - `ORPHEUS_API_TIMEOUT`: Timeout in seconds for API requests (default: 120)
+- `ORPHEUS_PORT`: Web server port (default: 5005)
+- `ORPHEUS_HOST`: Web server host (default: 0.0.0.0)
+
+**Generation Parameters:**
 - `ORPHEUS_MAX_TOKENS`: Maximum tokens to generate (default: 8192)
 - `ORPHEUS_TEMPERATURE`: Temperature for generation (default: 0.6)
 - `ORPHEUS_TOP_P`: Top-p sampling parameter (default: 0.9)
 - `ORPHEUS_SAMPLE_RATE`: Audio sample rate in Hz (default: 24000)
-- `ORPHEUS_PORT`: Web server port (default: 5005)
-- `ORPHEUS_HOST`: Web server host (default: 0.0.0.0)
-- `ORPHEUS_MODEL_NAME`: Model name for inference server
+
+**Model Configuration (for Docker Compose):**
+- `ORPHEUS_MODEL_NAME`: Model filename (e.g., Orpheus-3b-FT-Q8_0.gguf)
+- `ORPHEUS_MODEL_REPO`: HuggingFace repository owner (default: lex-au)
+- `ORPHEUS_MODEL_URL`: Direct URL to download model from any source (overrides ORPHEUS_MODEL_REPO)
 
 The system now supports loading environment variables from a `.env` file in the project root, making it easier to configure without modifying system-wide environment settings. See `.env.example` for a template.
 
