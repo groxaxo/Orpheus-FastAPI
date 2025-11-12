@@ -82,10 +82,10 @@ services:
         echo "Downloading model file..."
         if [ -n "${ORPHEUS_MODEL_URL}" ]; then
           echo "Using custom model URL: ${ORPHEUS_MODEL_URL}"
-          if wget --spider -q "${ORPHEUS_MODEL_URL}" 2>/dev/null; then
+          if curl --head --fail --silent "${ORPHEUS_MODEL_URL}" > /dev/null 2>&1; then
             wget -O /app/models/${ORPHEUS_MODEL_NAME} "${ORPHEUS_MODEL_URL}" || { echo "Error: Failed to download from ${ORPHEUS_MODEL_URL}"; exit 1; }
           else
-            echo "Error: URL ${ORPHEUS_MODEL_URL} is not accessible"
+            echo "Error: URL ${ORPHEUS_MODEL_URL} is not accessible or returned an error"
             exit 1
           fi
         else

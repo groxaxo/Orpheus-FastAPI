@@ -4,7 +4,12 @@
 
 [![GitHub](https://img.shields.io/github/license/groxaxo/Orpheus-FastAPI)](https://github.com/groxaxo/Orpheus-FastAPI/blob/main/LICENSE)
 
-High-performance Text-to-Speech server with OpenAI-compatible API, multilingual support with 24 voices, emotion tags, and modern web UI. Optimized for all NVIDIA GPUs including Ampere (RTX 30 series) and Ada Lovelace (RTX 40 series). **Supports any Orpheus GGUF model from anywhere on the internet.**
+High-performance Text-to-Speech server with OpenAI-compatible API, multilingual support with 24 voices, emotion tags, and modern web UI. 
+
+**Key Features:**
+- ✓ Optimized for all NVIDIA GPUs (Ampere RTX 30 series, Ada Lovelace RTX 40 series, and more)
+- ✓ Use any Orpheus GGUF model from anywhere on the internet
+- ✓ No restrictions on model sources - works with custom URLs, HuggingFace, or your own servers
 
 ## Changelog
 
