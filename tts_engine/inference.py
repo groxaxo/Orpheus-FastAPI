@@ -34,6 +34,8 @@ import psutil
 
 # Detect if we're on a high-end system based on hardware capabilities
 HIGH_END_GPU = False
+GPU_ARCHITECTURE = "Unknown"
+IS_AMPERE_RTX30 = False
 if torch.cuda.is_available():
     # Get GPU properties
     props = torch.cuda.get_device_properties(0)
@@ -41,7 +43,25 @@ if torch.cuda.is_available():
     gpu_mem_gb = props.total_memory / (1024**3)
     compute_capability = f"{props.major}.{props.minor}"
     
+    # Detect specific GPU architecture (based on compute capability)
+    if props.major == 8 and props.minor == 0:
+        GPU_ARCHITECTURE = "Ampere (A100)"
+    elif props.major == 8 and props.minor == 6:
+        GPU_ARCHITECTURE = "Ampere (RTX 30 Series)"
+        IS_AMPERE_RTX30 = True  # Flag for RTX 30 series specific optimizations
+    elif props.major == 8 and props.minor == 9:
+        GPU_ARCHITECTURE = "Ada Lovelace (RTX 40 Series)"
+    elif props.major == 7 and props.minor == 5:
+        GPU_ARCHITECTURE = "Turing (RTX 20/GTX 16 Series)"
+    elif props.major == 7 and props.minor == 0:
+        GPU_ARCHITECTURE = "Volta"
+    elif props.major == 6:
+        GPU_ARCHITECTURE = "Pascal"
+    else:
+        GPU_ARCHITECTURE = f"Compute {compute_capability}"
+    
     # Consider high-end if: large VRAM (≥16GB) OR high compute capability (≥8.0) OR large VRAM (≥12GB) with good CC (≥7.0)
+    # This includes RTX 3090 (24GB, CC 8.6), RTX 3080 (10/12GB, CC 8.6), RTX 4090, A100, etc.
     HIGH_END_GPU = (gpu_mem_gb >= 16.0 or 
                     props.major >= 8 or 
                     (gpu_mem_gb >= 12.0 and props.major >= 7))
@@ -50,13 +70,17 @@ if torch.cuda.is_available():
         if not IS_RELOADER:
             print(f"🖥️ Hardware: High-end CUDA GPU detected")
             print(f"📊 Device: {gpu_name}")
+            print(f"📊 Architecture: {GPU_ARCHITECTURE}")
             print(f"📊 VRAM: {gpu_mem_gb:.2f} GB")
             print(f"📊 Compute Capability: {compute_capability}")
             print("🚀 Using high-performance optimizations")
+            if IS_AMPERE_RTX30:
+                print("✓ Ampere GPU optimization enabled (RTX 30 series)")
     else:
         if not IS_RELOADER:
             print(f"🖥️ Hardware: CUDA GPU detected")
             print(f"📊 Device: {gpu_name}")
+            print(f"📊 Architecture: {GPU_ARCHITECTURE}")
             print(f"📊 VRAM: {gpu_mem_gb:.2f} GB")
             print(f"📊 Compute Capability: {compute_capability}")
             print("🚀 Using GPU-optimized settings")

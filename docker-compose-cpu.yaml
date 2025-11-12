@@ -45,11 +45,26 @@ services:
     volumes:
       - ./models:/app/models
     working_dir: /app
+    env_file:
+      - .env
     command: >
       sh -c '
       if [ ! -f /app/models/${ORPHEUS_MODEL_NAME} ]; then
         echo "Downloading model file..."
-        wget -P /app/models https://huggingface.co/lex-au/${ORPHEUS_MODEL_NAME}/resolve/main/${ORPHEUS_MODEL_NAME}
+        if [ -n "${ORPHEUS_MODEL_URL}" ]; then
+          echo "Using custom model URL: ${ORPHEUS_MODEL_URL}"
+          if curl --head --fail --silent "${ORPHEUS_MODEL_URL}" > /dev/null 2>&1; then
+            wget -O /app/models/${ORPHEUS_MODEL_NAME} "${ORPHEUS_MODEL_URL}" || { echo "Error: Failed to download from ${ORPHEUS_MODEL_URL}"; exit 1; }
+          else
+            echo "Error: URL ${ORPHEUS_MODEL_URL} is not accessible or returned an error"
+            exit 1
+          fi
+        else
+          REPO=${ORPHEUS_MODEL_REPO:-lex-au}
+          echo "Using HuggingFace repository: ${REPO}/${ORPHEUS_MODEL_NAME}"
+          wget -P /app/models https://huggingface.co/${REPO}/${ORPHEUS_MODEL_NAME}/resolve/main/${ORPHEUS_MODEL_NAME} || { echo "Error: Failed to download from HuggingFace"; exit 1; }
+        fi
+        echo "Model downloaded successfully"
       else
         echo "Model file already exists"
       fi'
