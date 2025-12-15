@@ -13,5 +13,6 @@ from .inference import (
     DEFAULT_VOICE,
     VOICE_TO_LANGUAGE,
     AVAILABLE_LANGUAGES,
+    VOICE_CHARACTERISTICS,
     list_available_voices
 )
