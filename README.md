@@ -406,7 +406,16 @@ The system features efficient batch processing for texts of any length:
 - Handles texts of unlimited length with no truncation
 - Provides detailed progress reporting for each batch
 
-**Note about long-form audio**: While the system now supports texts of unlimited length, there may be slight audio discontinuities between segments due to architectural constraints of the underlying model. The Orpheus model was designed for short to medium text segments, and our batching system works around this limitation by intelligently splitting and stitching content with minimal audible impact.
+### Voice Consistency Across Batches
+
+To maintain consistent voice characteristics during long-form text generation:
+- **Enhanced Voice Conditioning**: Each batch includes explicit voice characteristics (gender and style) in the prompt
+- **Temperature Reduction**: Batched generation automatically reduces temperature by 10% (minimum 0.5) to minimize voice variation
+- **Consistent Voice Identity**: The same voice parameters are applied to all batches to preserve voice characteristics
+
+**Example**: When using the "tara" voice for long text, each batch receives the prompt prefix: `tara (female, conversational, clear):` which helps the model maintain consistent female voice characteristics throughout the entire generation.
+
+**Note about long-form audio**: While the system supports texts of unlimited length with improved voice consistency mechanisms, there may still be slight variations in voice characteristics between segments due to the independent nature of batch processing. The enhanced voice conditioning and reduced temperature significantly minimize these variations.
 
 ### Integration with OpenWebUI
 
