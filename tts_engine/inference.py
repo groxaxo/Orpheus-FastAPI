@@ -140,6 +140,7 @@ except (ValueError, TypeError):
     TOP_P = 0.9
 
 # Repetition penalty is hardcoded to 1.1 which is the only stable value for quality output
+# Repetition penalty is hardcoded to 1.1 which is the only stable value for quality output
 REPETITION_PENALTY = 1.1
 
 try:
@@ -147,6 +148,12 @@ try:
 except (ValueError, TypeError):
     print("WARNING: Invalid ORPHEUS_SAMPLE_RATE value, using 24000 as fallback")
     SAMPLE_RATE = 24000
+
+# Voice consistency settings for batched generation
+# These parameters help maintain consistent voice characteristics across batch boundaries
+BATCH_TEMPERATURE_REDUCTION = 0.9  # Reduce temperature by 10% for batches
+MIN_BATCH_TEMPERATURE = 0.5  # Minimum temperature for batched generation
+DEFAULT_VOICE_CHARACTERISTICS = {"gender": "neutral", "style": "conversational"}  # Fallback for unknown voices
 
 # Print loaded configuration only in the main process, not in the reloader
 if not IS_RELOADER:
@@ -295,7 +302,7 @@ def format_prompt(prompt: str, voice: str = DEFAULT_VOICE) -> str:
         voice = DEFAULT_VOICE
     
     # Get voice characteristics for more explicit conditioning
-    voice_info = VOICE_CHARACTERISTICS.get(voice, {"gender": "neutral", "style": "conversational"})
+    voice_info = VOICE_CHARACTERISTICS.get(voice, DEFAULT_VOICE_CHARACTERISTICS)
     gender = voice_info["gender"]
     style = voice_info["style"]
     
@@ -783,7 +790,7 @@ def generate_speech_from_api(prompt, voice=DEFAULT_VOICE, output_file=None, temp
     
     # Use slightly lower temperature for batched generation to improve voice consistency
     # across independent batch generations. This helps maintain the same voice characteristics.
-    batch_temperature = max(0.5, temperature * 0.9)  # Reduce by 10%, minimum 0.5
+    batch_temperature = max(MIN_BATCH_TEMPERATURE, temperature * BATCH_TEMPERATURE_REDUCTION)
     if batch_temperature != temperature:
         print(f"Using reduced temperature ({batch_temperature:.2f}) for better voice consistency across batches")
     
