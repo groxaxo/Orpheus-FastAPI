@@ -197,6 +197,44 @@ VOICE_TO_LANGUAGE.update({voice: "italian" for voice in ITALIAN_VOICES})
 # Languages list for the UI
 AVAILABLE_LANGUAGES = ["english", "french", "german", "korean", "hindi", "mandarin", "spanish", "italian"]
 
+# Voice characteristics for improved consistency across batches
+# This provides explicit gender and style information to help the model maintain consistent voice
+VOICE_CHARACTERISTICS = {
+    # English voices
+    "tara": {"gender": "female", "style": "conversational, clear"},
+    "leah": {"gender": "female", "style": "warm, gentle"},
+    "jess": {"gender": "female", "style": "energetic, youthful"},
+    "leo": {"gender": "male", "style": "authoritative, deep"},
+    "dan": {"gender": "male", "style": "friendly, casual"},
+    "mia": {"gender": "female", "style": "professional, articulate"},
+    "zac": {"gender": "male", "style": "enthusiastic, dynamic"},
+    "zoe": {"gender": "female", "style": "calm, soothing"},
+    # French voices
+    "pierre": {"gender": "male", "style": "sophisticated"},
+    "amelie": {"gender": "female", "style": "elegant"},
+    "marie": {"gender": "female", "style": "spirited"},
+    # German voices
+    "jana": {"gender": "female", "style": "clear"},
+    "thomas": {"gender": "male", "style": "authoritative"},
+    "max": {"gender": "male", "style": "energetic"},
+    # Korean voices
+    "유나": {"gender": "female", "style": "melodic"},
+    "준서": {"gender": "male", "style": "confident"},
+    # Hindi voice
+    "ऋतिका": {"gender": "female", "style": "expressive"},
+    # Mandarin voices
+    "长乐": {"gender": "female", "style": "gentle"},
+    "白芷": {"gender": "female", "style": "clear"},
+    # Spanish voices
+    "javi": {"gender": "male", "style": "warm"},
+    "sergio": {"gender": "male", "style": "professional"},
+    "maria": {"gender": "female", "style": "friendly"},
+    # Italian voices
+    "pietro": {"gender": "male", "style": "passionate"},
+    "giulia": {"gender": "female", "style": "expressive"},
+    "carlo": {"gender": "male", "style": "refined"},
+}
+
 # Import the unified token handling from speechpipe
 from .speechpipe import turn_token_into_id, CUSTOM_TOKEN_PREFIX
 
@@ -245,14 +283,25 @@ class PerformanceMonitor:
 perf_monitor = PerformanceMonitor()
 
 def format_prompt(prompt: str, voice: str = DEFAULT_VOICE) -> str:
-    """Format prompt for Orpheus model with voice prefix and special tokens."""
+    """
+    Format prompt for Orpheus model with voice prefix and special tokens.
+    
+    Enhanced with explicit voice characteristics to improve consistency across batches,
+    especially important for long-form text generation where batches are processed independently.
+    """
     # Validate voice and provide fallback
     if voice not in AVAILABLE_VOICES:
         print(f"Warning: Voice '{voice}' not recognized. Using '{DEFAULT_VOICE}' instead.")
         voice = DEFAULT_VOICE
-        
-    # Format similar to how engine_class.py does it with special tokens
-    formatted_prompt = f"{voice}: {prompt}"
+    
+    # Get voice characteristics for more explicit conditioning
+    voice_info = VOICE_CHARACTERISTICS.get(voice, {"gender": "neutral", "style": "conversational"})
+    gender = voice_info["gender"]
+    style = voice_info["style"]
+    
+    # Format with explicit voice characteristics to maintain consistency across batches
+    # This helps the model maintain the same voice identity when generating multiple segments
+    formatted_prompt = f"{voice} ({gender}, {style}): {prompt}"
     
     # Add special token markers for the Orpheus-FASTAPI
     special_start = "<|audio|>"  # Using the additional_special_token from config
@@ -732,6 +781,12 @@ def generate_speech_from_api(prompt, voice=DEFAULT_VOICE, output_file=None, temp
     # For longer text, use sentence-based batching
     print(f"Using sentence-based batching for text with {len(prompt)} characters")
     
+    # Use slightly lower temperature for batched generation to improve voice consistency
+    # across independent batch generations. This helps maintain the same voice characteristics.
+    batch_temperature = max(0.5, temperature * 0.9)  # Reduce by 10%, minimum 0.5
+    if batch_temperature != temperature:
+        print(f"Using reduced temperature ({batch_temperature:.2f}) for better voice consistency across batches")
+    
     # Split the text into sentences
     sentences = split_text_into_sentences(prompt)
     print(f"Split text into {len(sentences)} segments")
@@ -770,12 +825,14 @@ def generate_speech_from_api(prompt, voice=DEFAULT_VOICE, output_file=None, temp
             temp_output_file = f"outputs/temp_batch_{i}_{int(time.time())}.wav"
             batch_temp_files.append(temp_output_file)
         
-        # Generate speech for this batch
+        # Generate speech for this batch with voice-preserving parameters
+        # Using consistent voice characteristics and reduced temperature helps maintain
+        # the same voice identity across all batches
         batch_segments = tokens_decoder_sync(
             generate_tokens_from_api(
                 prompt=batch,
                 voice=voice,
-                temperature=temperature,
+                temperature=batch_temperature,  # Use reduced temperature for consistency
                 top_p=top_p,
                 max_tokens=max_tokens,
                 repetition_penalty=REPETITION_PENALTY
