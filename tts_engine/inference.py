@@ -302,8 +302,8 @@ def format_prompt(prompt: str, voice: str = DEFAULT_VOICE) -> str:
     
     # Get voice characteristics for more explicit conditioning
     voice_info = VOICE_CHARACTERISTICS.get(voice, DEFAULT_VOICE_CHARACTERISTICS)
-    gender = voice_info["gender"]
-    style = voice_info["style"]
+    gender = voice_info.get("gender", "neutral")
+    style = voice_info.get("style", "conversational")
     
     # Format with explicit voice characteristics to maintain consistency across batches
     # This helps the model maintain the same voice identity when generating multiple segments
@@ -789,7 +789,13 @@ def generate_speech_from_api(prompt, voice=DEFAULT_VOICE, output_file=None, temp
     
     # Use slightly lower temperature for batched generation to improve voice consistency
     # across independent batch generations. This helps maintain the same voice characteristics.
-    batch_temperature = max(MIN_BATCH_TEMPERATURE, temperature * BATCH_TEMPERATURE_REDUCTION)
+    # Only reduce temperature if it's above the minimum threshold to avoid confusing behavior
+    if temperature >= MIN_BATCH_TEMPERATURE:
+        batch_temperature = max(MIN_BATCH_TEMPERATURE, temperature * BATCH_TEMPERATURE_REDUCTION)
+    else:
+        # If temperature is already very low, use it as-is
+        batch_temperature = temperature
+    
     if batch_temperature != temperature:
         print(f"Using reduced temperature ({batch_temperature:.2f}) for better voice consistency across batches")
     
