@@ -140,7 +140,6 @@ except (ValueError, TypeError):
     TOP_P = 0.9
 
 # Repetition penalty is hardcoded to 1.1 which is the only stable value for quality output
-# Repetition penalty is hardcoded to 1.1 which is the only stable value for quality output
 REPETITION_PENALTY = 1.1
 
 try:
