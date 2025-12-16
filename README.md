@@ -127,12 +127,11 @@ The easiest way to get started is using the auto-installer and auto-launcher scr
 git clone https://github.com/groxaxo/Orpheus-FastAPI.git
 cd Orpheus-FastAPI
 
-# Run the auto-installer (sets up everything)
-chmod +x install.sh
+# Make scripts executable and run the auto-installer
+chmod +x install.sh start.sh
 ./install.sh
 
 # Start both llamacpp and Orpheus-FastAPI automatically
-chmod +x start.sh
 ./start.sh
 ```
 

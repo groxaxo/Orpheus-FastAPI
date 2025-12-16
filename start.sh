@@ -15,9 +15,11 @@ echo "🚀 Orpheus-FastAPI Auto-Launcher"
 echo "================================"
 echo ""
 
-# Load environment variables
+# Load environment variables safely
 if [ -f ".env" ]; then
-    export $(cat .env | grep -v '^#' | xargs)
+    set -o allexport
+    source .env
+    set +o allexport
     echo -e "${GREEN}✓${NC} Loaded configuration from .env"
 else
     echo -e "${YELLOW}⚠${NC}  No .env file found. Using defaults..."
@@ -95,13 +97,14 @@ else
         echo "   Model: $MODEL_PATH"
         echo "   Port: $LLAMA_PORT"
         echo "   Max tokens: $ORPHEUS_MAX_TOKENS"
+        echo "   GPU layers: ${LLAMA_GPU_LAYERS:-29}"
         
         # Start llamacpp server in background
         nohup "$LLAMA_BIN" \
             -m "$MODEL_PATH" \
             --port "$LLAMA_PORT" \
             --host 0.0.0.0 \
-            --n-gpu-layers 29 \
+            --n-gpu-layers "${LLAMA_GPU_LAYERS:-29}" \
             --ctx-size "$ORPHEUS_MAX_TOKENS" \
             --n-predict "$ORPHEUS_MAX_TOKENS" \
             --rope-scaling linear \

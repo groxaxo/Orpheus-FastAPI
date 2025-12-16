@@ -12,6 +12,9 @@ Orpheus-FastAPI is **fully compatible** with Open-WebUI and provides automatic l
 # Clone and install
 git clone https://github.com/groxaxo/Orpheus-FastAPI.git
 cd Orpheus-FastAPI
+
+# Make scripts executable and install
+chmod +x install.sh start.sh
 ./install.sh
 
 # Start everything automatically

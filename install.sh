@@ -134,22 +134,23 @@ fi
 echo ""
 MODEL_NAME=$(grep ORPHEUS_MODEL_NAME .env | cut -d'=' -f2)
 MODEL_REPO=$(grep ORPHEUS_MODEL_REPO .env | cut -d'=' -f2)
+MODEL_BRANCH="${ORPHEUS_MODEL_BRANCH:-main}"
 
 if [ ! -f "models/$MODEL_NAME" ]; then
     echo "📥 Model not found. Downloading $MODEL_NAME from HuggingFace..."
     echo "   This may take a while depending on your connection..."
     
     if command -v wget &> /dev/null; then
-        wget -P models "https://huggingface.co/$MODEL_REPO/$MODEL_NAME/resolve/main/$MODEL_NAME" || {
+        wget -P models "https://huggingface.co/$MODEL_REPO/$MODEL_NAME/resolve/$MODEL_BRANCH/$MODEL_NAME" || {
             echo -e "${YELLOW}⚠${NC}  Model download failed. You can download it manually later."
         }
     elif command -v curl &> /dev/null; then
-        curl -L "https://huggingface.co/$MODEL_REPO/$MODEL_NAME/resolve/main/$MODEL_NAME" -o "models/$MODEL_NAME" || {
+        curl -L "https://huggingface.co/$MODEL_REPO/$MODEL_NAME/resolve/$MODEL_BRANCH/$MODEL_NAME" -o "models/$MODEL_NAME" || {
             echo -e "${YELLOW}⚠${NC}  Model download failed. You can download it manually later."
         }
     else
         echo -e "${YELLOW}⚠${NC}  wget or curl not found. Please download the model manually:"
-        echo "   https://huggingface.co/$MODEL_REPO/$MODEL_NAME/resolve/main/$MODEL_NAME"
+        echo "   https://huggingface.co/$MODEL_REPO/$MODEL_NAME/resolve/$MODEL_BRANCH/$MODEL_NAME"
     fi
 else
     echo -e "${GREEN}✓${NC} Model already exists: models/$MODEL_NAME"
