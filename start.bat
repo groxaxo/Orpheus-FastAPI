@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 REM Orpheus-FastAPI Auto-Launcher for Windows
 REM This script starts Orpheus-FastAPI (and llamacpp if available)
 
@@ -15,10 +16,14 @@ if not exist ".env" (
     set ORPHEUS_PORT=5005
 ) else (
     echo [OK] Loading configuration from .env
-    REM Load .env variables (simplified version for batch)
-    for /f "tokens=1,2 delims==" %%a in (.env) do (
-        if not "%%a"=="" if not "%%a:~0,1%"=="#" (
-            set %%a=%%b
+    REM Load .env variables - note: basic parsing, doesn't handle all edge cases
+    for /f "usebackq tokens=1,* delims==" %%a in (".env") do (
+        set "line=%%a"
+        REM Skip empty lines and comments
+        if defined line (
+            if not "!line:~0,1!"=="#" (
+                set "%%a=%%b"
+            )
         )
     )
 )

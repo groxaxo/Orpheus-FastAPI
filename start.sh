@@ -100,10 +100,12 @@ else
         echo "   GPU layers: ${LLAMA_GPU_LAYERS:-29}"
         
         # Start llamacpp server in background
+        # Note: Using 0.0.0.0 to allow connections from Docker containers and local network
+        # Change to 127.0.0.1 if you only need local access
         nohup "$LLAMA_BIN" \
             -m "$MODEL_PATH" \
             --port "$LLAMA_PORT" \
-            --host 0.0.0.0 \
+            --host "${LLAMA_HOST:-127.0.0.1}" \
             --n-gpu-layers "${LLAMA_GPU_LAYERS:-29}" \
             --ctx-size "$ORPHEUS_MAX_TOKENS" \
             --n-predict "$ORPHEUS_MAX_TOKENS" \
@@ -137,11 +139,15 @@ else
         echo -e "${YELLOW}⚠${NC}  llamacpp server binary not found"
         echo ""
         echo "Options:"
-        echo "1. Install llama.cpp:"
-        echo "   git clone https://github.com/ggerganov/llama.cpp"
-        echo "   cd llama.cpp && make"
+        echo "1. Install llama.cpp (recommended):"
+        echo "   Visit: https://github.com/ggerganov/llama.cpp"
+        echo "   Or quick install:"
+        echo "     git clone https://github.com/ggerganov/llama.cpp"
+        echo "     cd llama.cpp"
+        echo "     make  # For CPU"
+        echo "     make GGML_CUDA=1  # For NVIDIA GPU"
         echo ""
-        echo "2. Use Docker Compose (recommended):"
+        echo "2. Use Docker Compose (easiest):"
         echo "   docker compose -f docker-compose-gpu.yml up"
         echo ""
         echo "3. Start an external llamacpp server and set ORPHEUS_API_URL in .env"
