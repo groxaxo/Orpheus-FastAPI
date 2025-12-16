@@ -130,15 +130,57 @@ async def create_speech_api(request: SpeechRequest):
         filename=f"{request.voice}_{timestamp}.wav"
     )
 
+@app.get("/v1/models")
+async def list_models():
+    """
+    Return list of available models.
+    Compatible with OpenAI's /v1/models endpoint for open-webui.
+    """
+    model_name = os.environ.get("ORPHEUS_MODEL_NAME", "Orpheus-3b-FT-Q8_0.gguf")
+    return JSONResponse(
+        content={
+            "object": "list",
+            "data": [
+                {
+                    "id": "tts-1",
+                    "object": "model",
+                    "created": 1677610602,
+                    "owned_by": "orpheus-fastapi",
+                    "permission": [],
+                    "root": "tts-1",
+                    "parent": None
+                },
+                {
+                    "id": "orpheus",
+                    "object": "model",
+                    "created": 1677610602,
+                    "owned_by": "orpheus-fastapi",
+                    "permission": [],
+                    "root": "orpheus",
+                    "parent": None,
+                    "description": model_name
+                }
+            ]
+        }
+    )
+
 @app.get("/v1/audio/voices")
 async def list_voices():
-    """Return list of available voices"""
+    """
+    Return list of available voices.
+    Compatible with open-webui's voice listing requirements.
+    """
     if not AVAILABLE_VOICES or len(AVAILABLE_VOICES) == 0:
         raise HTTPException(status_code=404, detail="No voices available")
+    
+    # Format voices as a simple list for open-webui compatibility
+    voices_list = [{"id": voice, "name": voice} for voice in AVAILABLE_VOICES]
+    
     return JSONResponse(
         content={
             "status": "ok",
-            "voices": AVAILABLE_VOICES
+            "voices": AVAILABLE_VOICES,  # Keep for backward compatibility
+            "data": voices_list  # Add data array for open-webui
         }
     )
 

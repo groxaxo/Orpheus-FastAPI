@@ -4,3 +4,6 @@ __pycache__/
 venv/
 models/
 *.gguf
+llama-server.log
+.llama-server.pid
+llama.cpp/

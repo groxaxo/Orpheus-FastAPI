@@ -113,6 +113,44 @@ Orpheus-FastAPI/
 - Using docker compose or separate LLM inference server running the Orpheus model (e.g., LM Studio or llama.cpp server)
 - For Docker GPU Support, ensure you're using an Nvidia GPU on either Linux or Windows with CUDA 12.4 or greater and NVIDIA Container Toolkit installed
 
+### 🚀 Quick Start with Auto-Installer (Recommended)
+
+The easiest way to get started is using the auto-installer and auto-launcher scripts:
+
+```bash
+# Clone the repository
+git clone https://github.com/groxaxo/Orpheus-FastAPI.git
+cd Orpheus-FastAPI
+
+# Run the auto-installer (sets up everything)
+chmod +x install.sh
+./install.sh
+
+# Start both llamacpp and Orpheus-FastAPI automatically
+chmod +x start.sh
+./start.sh
+```
+
+The auto-installer will:
+- ✓ Detect your OS and Python version
+- ✓ Create a virtual environment
+- ✓ Install PyTorch (with CUDA if GPU detected)
+- ✓ Install all dependencies
+- ✓ Create necessary directories
+- ✓ Generate .env configuration
+- ✓ Download the GGUF model
+
+The auto-launcher (`start.sh`) will:
+- ✓ Start llamacpp server in background (if binary found)
+- ✓ Wait for llamacpp to be ready
+- ✓ Start Orpheus-FastAPI server
+- ✓ Handle cleanup on exit
+
+Access:
+- Web interface: http://localhost:5005/
+- API documentation: http://localhost:5005/docs
+- Open-WebUI integration: http://localhost:5005/v1
+
 ### 🐳 Docker compose
 
 The docker compose file orchestrates the Orpheus-FastAPI for audio and a llama.cpp inference server for the base model token generation. The GGUF model is downloaded with the model-init service.
@@ -417,17 +455,66 @@ To maintain consistent voice characteristics during long-form text generation:
 
 **Note about long-form audio**: While the system supports texts of unlimited length with improved voice consistency mechanisms, there may still be slight variations in voice characteristics between segments due to the independent nature of batch processing. The enhanced voice conditioning and reduced temperature significantly minimize these variations.
 
-### Integration with OpenWebUI
+### Integration with Open-WebUI
 
-You can easily integrate this TTS solution with [OpenWebUI](https://github.com/open-webui/open-webui) to add high-quality voice capabilities to your chatbot:
+Orpheus-FastAPI is **fully compatible** with [Open-WebUI](https://github.com/open-webui/open-webui) and provides seamless integration with its TTS features. The server implements OpenAI-compatible endpoints that Open-WebUI expects:
 
-1. Start your Orpheus-FASTAPI server
-2. In OpenWebUI, go to Admin Panel > Settings > Audio
-3. Change TTS from Web API to OpenAI
-4. Set APIBASE URL to your server address (e.g., `http://localhost:5005/v1`)
-5. API Key can be set to "not-needed"
-6. Set TTS Voice to any of the available voices (e.g., `tara`, `pierre`, `jana`, `유나`, etc.)
-7. Set TTS Model to `tts-1`
+#### Supported Endpoints:
+- ✓ `/v1/audio/speech` - Generate speech from text (OpenAI-compatible)
+- ✓ `/v1/models` - List available TTS models
+- ✓ `/v1/audio/voices` - List available voices
+
+#### Quick Setup with Auto-Launcher:
+
+**Option 1: Using Auto-Launcher (Recommended)**
+```bash
+# Install and start everything automatically
+./install.sh
+./start.sh
+```
+
+**Option 2: Using Docker Compose**
+```bash
+docker compose -f docker-compose-gpu.yml up
+```
+
+Both methods will:
+- Automatically start llamacpp server in the background with the GGUF model
+- Launch Orpheus-FastAPI with full open-webui compatibility
+- Expose the API at `http://localhost:5005/v1`
+
+#### Configure in Open-WebUI:
+
+1. Start your Orpheus-FastAPI server (using `./start.sh` or Docker)
+2. In Open-WebUI, go to **Admin Panel > Settings > Audio**
+3. Change TTS Engine to **OpenAI**
+4. Set **API Base URL** to your server address:
+   - Local: `http://localhost:5005/v1`
+   - Docker (same host): `http://localhost:5005/v1`
+   - Remote: `http://your-server-ip:5005/v1`
+5. Set **API Key** to `not-needed` (or leave blank)
+6. Set **TTS Model** to `tts-1` or `orpheus`
+7. Set **TTS Voice** to any available voice (e.g., `tara`, `leah`, `pierre`, `jana`, `유나`, etc.)
+
+#### Verify Integration:
+
+```bash
+# Test the endpoint
+curl http://localhost:5005/v1/models
+curl http://localhost:5005/v1/audio/voices
+
+# Generate speech
+curl http://localhost:5005/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "tts-1",
+    "input": "Hello from Orpheus TTS!",
+    "voice": "tara"
+  }' \
+  --output test.wav
+```
+
+The system ensures llamacpp is automatically deployed in the background whenever the server launches, hosting the GGUF model for optimal performance.
 
 ### External Inference Server
 
